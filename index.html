@@ -17,6 +17,10 @@
             --knob-off: #166534;       /* 深綠色 (樹葉) */
             --knob-on: #ffffff;        /* 開啟時圓鈕保持白色 */
             
+            /* 樹幹顏色 */
+            --trunk-bg: #422006;       /* 深褐色 */
+            --trunk-knob: #713f12;     /* 較淺的褐色 */
+
             /* 亮起時的顏色變數 - 增加多種綠色 */
             --active-green-light: #4ade80;   /* 嫩綠色/亮綠 */
             --active-green-medium: #22c55e;  /* 正綠色 */
@@ -69,6 +73,19 @@
             background-color: var(--knob-off);
             transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 樹幹專用樣式 (Disabled Switch) */
+        .switch.trunk {
+            background-color: var(--trunk-bg) !important;
+            cursor: default;
+            animation: none !important; /* 強制移除動畫 */
+            box-shadow: none;
+        }
+        .switch.trunk .knob {
+            background-color: var(--trunk-knob) !important;
+            transform: translateX(0) !important; /* 強制保持在左側 */
+            animation: none !important;
         }
 
         /* * 動畫定義
@@ -219,6 +236,7 @@
 
         // 定義每一層的開關數量與配置
         const rowsConfig = [
+            // 樹葉部分
             { count: 1, widths: ['w-12'] },
             { count: 2, widths: ['w-12', 'w-12'] },
             { count: 3, widths: ['w-16', 'w-12', 'w-16'] },
@@ -227,6 +245,10 @@
             { count: 6, widths: ['w-16', 'w-12', 'w-12', 'w-12', 'w-12', 'w-16'] },
             { count: 7, widths: ['w-12', 'w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12'] },
             { count: 8, widths: ['w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12'] },
+            
+            // 樹幹部分 (使用 type: 'trunk' 標記)
+            { count: 2, widths: ['w-12', 'w-12'], type: 'trunk' },
+            { count: 2, widths: ['w-12', 'w-12'], type: 'trunk' },
         ];
 
         // 聖誕配色
@@ -248,18 +270,34 @@
             for (let i = 0; i < row.count; i++) {
                 const switchEl = document.createElement('div');
                 const widthClass = row.widths[i] || (Math.random() > 0.5 ? 'w-12' : 'w-16');
-                const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-                // 直接加入 animating class
-                switchEl.className = `switch ${widthClass} animating`; 
-                switchEl.style.setProperty('--target-color', randomColor);
-
-                const randomDelay = Math.random() * -5; 
-                switchEl.style.animationDelay = `${randomDelay}s`;
+                
+                // 判斷是否為樹幹
+                const isTrunk = row.type === 'trunk';
+                
+                if (isTrunk) {
+                    // 樹幹：不加動畫 class，加入 trunk class
+                    switchEl.className = `switch ${widthClass} trunk`;
+                } else {
+                    // 樹葉：加入隨機顏色與動畫
+                    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                    switchEl.className = `switch ${widthClass} animating`; 
+                    switchEl.style.setProperty('--target-color', randomColor);
+                    
+                    const randomDelay = Math.random() * -5; 
+                    switchEl.style.animationDelay = `${randomDelay}s`;
+                }
 
                 const knob = document.createElement('div');
-                knob.className = 'knob knob-anim'; 
-                knob.style.animationDelay = `${randomDelay}s`;
+                
+                if (isTrunk) {
+                    // 樹幹按鈕：無動畫
+                    knob.className = 'knob';
+                } else {
+                    // 樹葉按鈕：有動畫
+                    knob.className = 'knob knob-anim'; 
+                    // 必須與父層 switch 延遲同步
+                    knob.style.animationDelay = switchEl.style.animationDelay;
+                }
 
                 switchEl.appendChild(knob);
                 rowDiv.appendChild(switchEl);
@@ -276,7 +314,7 @@
         var player;
 
         // 播放清單
-        const VIDEO_IDS = [ 
+        const VIDEO_IDS = [
             'jgPByUmJ_n0',
             'uEoGR24CirQ',
             'zsFNoriSxHU',
@@ -325,8 +363,8 @@
         }
 
         document.body.addEventListener('click', (e) => {
-            // 隨機化動畫
-            const switches = document.querySelectorAll('.switch');
+            // 隨機化動畫 (只針對非樹幹的開關)
+            const switches = document.querySelectorAll('.switch:not(.trunk)');
             switches.forEach(sw => {
                 const newDelay = Math.random() * -5;
                 sw.style.animationDelay = `${newDelay}s`;
