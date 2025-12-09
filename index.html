@@ -17,9 +17,9 @@
             --knob-off: #166534;       /* 深綠色 (樹葉) */
             --knob-on: #ffffff;        /* 開啟時圓鈕保持白色 */
             
-            /* 樹幹顏色 */
-            --trunk-bg: #422006;       /* 深褐色 */
-            --trunk-knob: #713f12;     /* 較淺的褐色 */
+            /* 樹幹顏色 - 加深 */
+            --trunk-bg: #281203;       /* 更深的黑褐色 */
+            --trunk-knob: #451a03;     /* 深褐色 */
 
             /* 亮起時的顏色變數 - 增加多種綠色 */
             --active-green-light: #4ade80;   /* 嫩綠色/亮綠 */
@@ -115,6 +115,8 @@
         .switch.w-12 .knob-anim { animation: knobMoveSmall 4s infinite ease-in-out; }
         .switch.w-16 .knob-anim { animation: knobMoveMedium 4s infinite ease-in-out; }
         .switch.w-20 .knob-anim { animation: knobMoveLarge 4s infinite ease-in-out; }
+        /* 為合併後的樹幹增加一個對應的寬度動畫 (雖然樹幹不一定動，但若有需要可擴充) */
+        .switch.w-24 .knob-anim { animation: knobMoveXLarge 4s infinite ease-in-out; }
 
         @keyframes knobMoveSmall {
             0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
@@ -129,6 +131,11 @@
         @keyframes knobMoveLarge {
             0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
             25%, 60% { transform: translateX(52px); background-color: var(--knob-on); }
+            70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
+        }
+        @keyframes knobMoveXLarge {
+            0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
+            25%, 60% { transform: translateX(68px); background-color: var(--knob-on); }
             70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
         }
 
@@ -247,8 +254,9 @@
             { count: 8, widths: ['w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12'] },
             
             // 樹幹部分 (使用 type: 'trunk' 標記)
-            { count: 2, widths: ['w-12', 'w-12'], type: 'trunk' },
-            { count: 2, widths: ['w-12', 'w-12'], type: 'trunk' },
+            // 修改為單一合併的寬樹幹 (w-24)
+            { count: 1, widths: ['w-24'], type: 'trunk' },
+            { count: 1, widths: ['w-24'], type: 'trunk' },
         ];
 
         // 聖誕配色
@@ -313,7 +321,7 @@
 
         var player;
 
-        // 播放清單
+        // 播放清單 - 已更新
         const VIDEO_IDS = [
             'jgPByUmJ_n0',
             'uEoGR24CirQ',
