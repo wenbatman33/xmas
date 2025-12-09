@@ -1,392 +1,517 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Merry Christmas!</title>
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#990000" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+
+    <!-- Open Graph / Social Media Sharing -->
+    <meta property="og:title" content="Merry Christmas! 🎄" />
+    <meta
+      property="og:description"
+      content="Click to light up the Christmas tree! 點擊點亮聖誕樹，分享節日祝福！"
+    />
+    <meta property="og:image" content="og-image.png" />
+    <meta property="og:url" content="" />
+    <meta property="og:type" content="website" />
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./sw.js")
+            .then((reg) => console.log("Service Worker registered", reg))
+            .catch((err) =>
+              console.log("Service Worker registration failed", err)
+            );
+        });
+      }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* * 核心配色 
+      /* * 核心配色 
          * 修改為「綠樹紅底」配色
          */
-        :root {
-            --bg-color: #990000;       /* 聖誕紅背景 */
-            
-            /* 樹的本體顏色 (關閉狀態) - 改為深綠色系 */
-            --switch-off-bg: #064e3b;  /* 極深綠色 (樹葉陰影) */
-            --knob-off: #166534;       /* 深綠色 (樹葉) */
-            --knob-on: #ffffff;        /* 開啟時圓鈕保持白色 */
-            
-            /* 樹幹顏色 - 加深 */
-            --trunk-bg: #281203;       /* 更深的黑褐色 */
-            --trunk-knob: #451a03;     /* 深褐色 */
+      :root {
+        --bg-color: #990000; /* 聖誕紅背景 */
 
-            /* 亮起時的顏色變數 - 增加多種綠色 */
-            --active-green-light: #4ade80;   /* 嫩綠色/亮綠 */
-            --active-green-medium: #22c55e;  /* 正綠色 */
-            --active-green-dark: #15803d;    /* 深綠色 */
-            
-            /* 點綴色 (裝飾品) */
-            --active-red: #ef4444;     
-            --active-gold: #fbbf24;    
-            --active-white: #f8fafc;   
-        }
+        /* 樹的本體顏色 (關閉狀態) - 改為深綠色系 */
+        --switch-off-bg: #064e3b; /* 極深綠色 (樹葉陰影) */
+        --knob-off: #166534; /* 深綠色 (樹葉) */
+        --knob-on: #ffffff; /* 開啟時圓鈕保持白色 */
 
-        body {
-            background-color: var(--bg-color);
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden; /* 防止捲軸 */
-            /* 確保內容垂直置中 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
+        /* 樹幹顏色 - 加深 */
+        --trunk-bg: #281203; /* 更深的黑褐色 */
+        --trunk-knob: #451a03; /* 深褐色 */
 
-        /* * 開關本體 (容器)
+        /* 亮起時的顏色變數 - 增加多種綠色 */
+        --active-green-light: #4ade80; /* 嫩綠色/亮綠 */
+        --active-green-medium: #22c55e; /* 正綠色 */
+        --active-green-dark: #15803d; /* 深綠色 */
+
+        /* 點綴色 (裝飾品) */
+        --active-red: #ef4444;
+        --active-gold: #fbbf24;
+        --active-white: #f8fafc;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        font-family: "Courier New", Courier, monospace;
+        overflow: hidden; /* 防止捲軸 */
+        /* 確保內容垂直置中 */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      /* * 開關本體 (容器)
          */
-        .switch {
-            position: relative;
-            height: 28px;
-            border-radius: 999px; /* 膠囊形狀 */
-            background-color: var(--switch-off-bg);
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            display: inline-block;
-            margin: 4px;
-            /* 初始寬度，會被 JS 覆蓋 */
-            width: 50px; 
-            /* 避免手機上點擊出現藍色框框 */
-            -webkit-tap-highlight-color: transparent;
-        }
+      .switch {
+        position: relative;
+        height: 28px;
+        border-radius: 999px; /* 膠囊形狀 */
+        background-color: var(--switch-off-bg);
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        display: inline-block;
+        margin: 4px;
+        /* 初始寬度，會被 JS 覆蓋 */
+        width: 50px;
+        /* 避免手機上點擊出現藍色框框 */
+        -webkit-tap-highlight-color: transparent;
+      }
 
-        /* * 開關裡的圓鈕 (Knob)
+      /* * 開關裡的圓鈕 (Knob)
          */
-        .knob {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: var(--knob-off);
-            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
+      .knob {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: var(--knob-off);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
 
-        /* 樹幹專用樣式 (Disabled Switch) */
-        .switch.trunk {
-            background-color: var(--trunk-bg) !important;
-            cursor: default;
-            animation: none !important; /* 強制移除動畫 */
-            box-shadow: none;
-        }
-        .switch.trunk .knob {
-            background-color: var(--trunk-knob) !important;
-            transform: translateX(0) !important; /* 強制保持在左側 */
-            animation: none !important;
-        }
+      /* 樹幹專用樣式 (Disabled Switch) */
+      .switch.trunk {
+        background-color: var(--trunk-bg) !important;
+        cursor: default;
+        animation: none !important; /* 強制移除動畫 */
+        box-shadow: none;
+      }
+      .switch.trunk .knob {
+        background-color: var(--trunk-knob) !important;
+        transform: translateX(0) !important; /* 強制保持在左側 */
+        animation: none !important;
+      }
 
-        /* * 動畫定義
+      /* * 動畫定義
          * 讓開關不斷地從 Off -> On -> Off 循環
          */
-        @keyframes toggleLoop {
-            0%, 10% { background-color: var(--switch-off-bg); }
-            10% { background-color: var(--switch-off-bg); }
-            20% { background-color: var(--target-color); }
-            45%, 55% { background-color: var(--target-color); }
-            65% { background-color: var(--target-color); }
-            75%, 100% { background-color: var(--switch-off-bg); }
+      @keyframes toggleLoop {
+        0%,
+        10% {
+          background-color: var(--switch-off-bg);
         }
+        10% {
+          background-color: var(--switch-off-bg);
+        }
+        20% {
+          background-color: var(--target-color);
+        }
+        45%,
+        55% {
+          background-color: var(--target-color);
+        }
+        65% {
+          background-color: var(--target-color);
+        }
+        75%,
+        100% {
+          background-color: var(--switch-off-bg);
+        }
+      }
 
-        @keyframes knobLoop {
-            0%, 10% { transform: translateX(0); background-color: var(--knob-off); }
-            20%, 65% { transform: translateX(calc(100% + 4px)); background-color: var(--knob-on); }
-            75%, 100% { transform: translateX(0); background-color: var(--knob-off); }
+      @keyframes knobLoop {
+        0%,
+        10% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
         }
+        20%,
+        65% {
+          transform: translateX(calc(100% + 4px));
+          background-color: var(--knob-on);
+        }
+        75%,
+        100% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+      }
 
-        /* 應用動畫的類別 */
-        .animating {
-            animation: toggleLoop 4s infinite ease-in-out;
-        }
-        
-        /* Knob 位移距離動畫 */
-        .switch.w-12 .knob-anim { animation: knobMoveSmall 4s infinite ease-in-out; }
-        .switch.w-16 .knob-anim { animation: knobMoveMedium 4s infinite ease-in-out; }
-        .switch.w-20 .knob-anim { animation: knobMoveLarge 4s infinite ease-in-out; }
-        /* 為合併後的樹幹增加一個對應的寬度動畫 (雖然樹幹不一定動，但若有需要可擴充) */
-        .switch.w-24 .knob-anim { animation: knobMoveXLarge 4s infinite ease-in-out; }
+      /* 應用動畫的類別 */
+      .animating {
+        animation: toggleLoop 4s infinite ease-in-out;
+      }
 
-        @keyframes knobMoveSmall {
-            0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
-            25%, 60% { transform: translateX(20px); background-color: var(--knob-on); } 
-            70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
-        }
-        @keyframes knobMoveMedium {
-            0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
-            25%, 60% { transform: translateX(36px); background-color: var(--knob-on); }
-            70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
-        }
-        @keyframes knobMoveLarge {
-            0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
-            25%, 60% { transform: translateX(52px); background-color: var(--knob-on); }
-            70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
-        }
-        @keyframes knobMoveXLarge {
-            0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
-            25%, 60% { transform: translateX(68px); background-color: var(--knob-on); }
-            70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
-        }
+      /* Knob 位移距離動畫 */
+      .switch.w-12 .knob-anim {
+        animation: knobMoveSmall 4s infinite ease-in-out;
+      }
+      .switch.w-16 .knob-anim {
+        animation: knobMoveMedium 4s infinite ease-in-out;
+      }
+      .switch.w-20 .knob-anim {
+        animation: knobMoveLarge 4s infinite ease-in-out;
+      }
+      /* 為合併後的樹幹增加一個對應的寬度動畫 (雖然樹幹不一定動，但若有需要可擴充) */
+      .switch.w-24 .knob-anim {
+        animation: knobMoveXLarge 4s infinite ease-in-out;
+      }
 
-        /* * Logo 樣式 
+      @keyframes knobMoveSmall {
+        0%,
+        15% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+        25%,
+        60% {
+          transform: translateX(20px);
+          background-color: var(--knob-on);
+        }
+        70%,
+        100% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+      }
+      @keyframes knobMoveMedium {
+        0%,
+        15% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+        25%,
+        60% {
+          transform: translateX(36px);
+          background-color: var(--knob-on);
+        }
+        70%,
+        100% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+      }
+      @keyframes knobMoveLarge {
+        0%,
+        15% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+        25%,
+        60% {
+          transform: translateX(52px);
+          background-color: var(--knob-on);
+        }
+        70%,
+        100% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+      }
+      @keyframes knobMoveXLarge {
+        0%,
+        15% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+        25%,
+        60% {
+          transform: translateX(68px);
+          background-color: var(--knob-on);
+        }
+        70%,
+        100% {
+          transform: translateX(0);
+          background-color: var(--knob-off);
+        }
+      }
+
+      /* * Logo 樣式 
          */
-        .logo-text {
-            color: #fff;
-            letter-spacing: 4px;
-            font-weight: 700;
-            opacity: 0.9;
-            transition: all 0.3s;
-        }
-        .logo-accent {
-            color: var(--active-gold); /* 金色 */
-        }
+      .logo-text {
+        color: #fff;
+        letter-spacing: 4px;
+        font-weight: 700;
+        opacity: 0.9;
+        transition: all 0.3s;
+      }
+      .logo-accent {
+        color: var(--active-gold); /* 金色 */
+      }
 
-        /* YouTube 小視窗樣式 */
-        .video-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 240px;
-            height: 135px; /* 16:9 比例 */
-            z-index: 100;
-            border: 4px solid var(--active-gold);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            background-color: #000;
-            opacity: 1; 
-            transition: transform 0.3s ease;
-        }
-        .video-container:hover {
-            transform: scale(1.05);
-        }
-        .video-label {
-            position: absolute;
-            top: -25px;
-            right: 0;
-            color: var(--active-gold);
-            font-size: 12px;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
+      /* YouTube 小視窗樣式 */
+      .video-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 240px;
+        height: 135px; /* 16:9 比例 */
+        z-index: 100;
+        border: 4px solid var(--active-gold);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        background-color: #000;
+        opacity: 1;
+        transition: transform 0.3s ease;
+      }
+      .video-container:hover {
+        transform: scale(1.05);
+      }
+      .video-label {
+        position: absolute;
+        top: -25px;
+        right: 0;
+        color: var(--active-gold);
+        font-size: 12px;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
 
-        /* -------------------------------------
+      /* -------------------------------------
            手機版優化 (Mobile Optimization)
            ------------------------------------- */
-        @media (max-width: 768px) {
-            /* 1. 縮小整棵樹 */
-            #tree-container {
-                transform: scale(0.65); /* 縮小至 65% */
-                margin-bottom: -2rem;   /* 調整因為縮小產生的空白 */
-            }
-
-            /* 2. 縮小影片視窗，避免擋住太多 */
-            .video-container {
-                width: 160px;
-                height: 90px;
-                bottom: 15px;
-                right: 15px;
-                border-width: 2px;
-            }
-            .video-label {
-                font-size: 10px;
-                top: -18px;
-            }
-
-            /* 3. 調整文字大小 */
-            .logo-text {
-                font-size: 1.1rem;
-                margin-top: 0px;
-            }
+      @media (max-width: 768px) {
+        /* 1. 縮小整棵樹 */
+        #tree-container {
+          transform: scale(0.65); /* 縮小至 65% */
+          margin-bottom: -2rem; /* 調整因為縮小產生的空白 */
         }
-        
-        /* 針對更小的螢幕 (例如 iPhone SE) */
-        @media (max-width: 380px) {
-             #tree-container {
-                transform: scale(0.55); /* 縮得更小 */
-            }
+
+        /* 2. 縮小影片視窗，避免擋住太多 */
+        .video-container {
+          width: 160px;
+          height: 90px;
+          bottom: 15px;
+          right: 15px;
+          border-width: 2px;
         }
+        .video-label {
+          font-size: 10px;
+          top: -18px;
+        }
+
+        /* 3. 調整文字大小 */
+        .logo-text {
+          font-size: 1.1rem;
+          margin-top: 0px;
+        }
+      }
+
+      /* 針對更小的螢幕 (例如 iPhone SE) */
+      @media (max-width: 380px) {
+        #tree-container {
+          transform: scale(0.55); /* 縮得更小 */
+        }
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <!-- YouTube 播放器容器 (右下角) -->
     <div class="video-container">
-        <!-- 標籤說明 -->
-        <div class="video-label">BGM: Christmas Vibes 🎵</div>
-        <div id="youtube-player"></div>
+      <!-- 標籤說明 -->
+      <div class="video-label">BGM: Christmas Vibes 🎵</div>
+      <div id="youtube-player"></div>
     </div>
 
     <!-- 主要容器 -->
     <div id="tree-container" class="flex flex-col items-center gap-2 mb-12">
-        <!-- Javascript 會在這裡生成開關 -->
+      <!-- Javascript 會在這裡生成開關 -->
     </div>
 
     <!-- 底部文字 -->
     <div class="logo-text text-xl">
-        <span class="logo-accent">Merry</span> Christmas!
+      <span class="logo-accent">Merry</span> Christmas!
     </div>
 
     <script>
-        const container = document.getElementById('tree-container');
+      const container = document.getElementById("tree-container");
 
-        // 定義每一層的開關數量與配置
-        const rowsConfig = [
-            // 樹葉部分
-            { count: 1, widths: ['w-12'] },
-            { count: 2, widths: ['w-12', 'w-12'] },
-            { count: 3, widths: ['w-16', 'w-12', 'w-16'] },
-            { count: 4, widths: ['w-12', 'w-16', 'w-16', 'w-12'] },
-            { count: 5, widths: ['w-12', 'w-12', 'w-16', 'w-12', 'w-12'] },
-            { count: 6, widths: ['w-16', 'w-12', 'w-12', 'w-12', 'w-12', 'w-16'] },
-            { count: 7, widths: ['w-12', 'w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12'] },
-            { count: 8, widths: ['w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12'] },
-            
-            // 樹幹部分 (使用 type: 'trunk' 標記)
-            // 修改為單一合併的寬樹幹 (w-24)
-            { count: 1, widths: ['w-24'], type: 'trunk' },
-            { count: 1, widths: ['w-24'], type: 'trunk' },
-        ];
+      // 定義每一層的開關數量與配置
+      const rowsConfig = [
+        // 樹葉部分
+        { count: 1, widths: ["w-12"] },
+        { count: 2, widths: ["w-12", "w-12"] },
+        { count: 3, widths: ["w-16", "w-12", "w-16"] },
+        { count: 4, widths: ["w-12", "w-16", "w-16", "w-12"] },
+        { count: 5, widths: ["w-12", "w-12", "w-16", "w-12", "w-12"] },
+        { count: 6, widths: ["w-16", "w-12", "w-12", "w-12", "w-12", "w-16"] },
+        {
+          count: 7,
+          widths: ["w-12", "w-16", "w-12", "w-16", "w-12", "w-16", "w-12"],
+        },
+        {
+          count: 8,
+          widths: [
+            "w-16",
+            "w-12",
+            "w-16",
+            "w-12",
+            "w-16",
+            "w-12",
+            "w-16",
+            "w-12",
+          ],
+        },
 
-        // 聖誕配色
-        const colors = [
-            'var(--active-green-light)',
-            'var(--active-green-medium)',
-            'var(--active-green-dark)',
-            'var(--active-green-medium)', 
-            'var(--active-green-light)',
-            'var(--active-gold)',
-            'var(--active-white)', 
-            'var(--active-red)' 
-        ];
+        // 樹幹部分 (使用 type: 'trunk' 標記)
+        // 修改為單一合併的寬樹幹 (w-24)
+        { count: 1, widths: ["w-24"], type: "trunk" },
+        { count: 1, widths: ["w-24"], type: "trunk" },
+      ];
 
-        rowsConfig.forEach((row, rowIndex) => {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'flex justify-center items-center';
-            
-            for (let i = 0; i < row.count; i++) {
-                const switchEl = document.createElement('div');
-                const widthClass = row.widths[i] || (Math.random() > 0.5 ? 'w-12' : 'w-16');
-                
-                // 判斷是否為樹幹
-                const isTrunk = row.type === 'trunk';
-                
-                if (isTrunk) {
-                    // 樹幹：不加動畫 class，加入 trunk class
-                    switchEl.className = `switch ${widthClass} trunk`;
-                } else {
-                    // 樹葉：加入隨機顏色與動畫
-                    const randomColor = colors[Math.floor(Math.random() * colors.length)];
-                    switchEl.className = `switch ${widthClass} animating`; 
-                    switchEl.style.setProperty('--target-color', randomColor);
-                    
-                    const randomDelay = Math.random() * -5; 
-                    switchEl.style.animationDelay = `${randomDelay}s`;
-                }
+      // 聖誕配色
+      const colors = [
+        "var(--active-green-light)",
+        "var(--active-green-medium)",
+        "var(--active-green-dark)",
+        "var(--active-green-medium)",
+        "var(--active-green-light)",
+        "var(--active-gold)",
+        "var(--active-white)",
+        "var(--active-red)",
+      ];
 
-                const knob = document.createElement('div');
-                
-                if (isTrunk) {
-                    // 樹幹按鈕：無動畫
-                    knob.className = 'knob';
-                } else {
-                    // 樹葉按鈕：有動畫
-                    knob.className = 'knob knob-anim'; 
-                    // 必須與父層 switch 延遲同步
-                    knob.style.animationDelay = switchEl.style.animationDelay;
-                }
+      rowsConfig.forEach((row, rowIndex) => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "flex justify-center items-center";
 
-                switchEl.appendChild(knob);
-                rowDiv.appendChild(switchEl);
-            }
-            container.appendChild(rowDiv);
+        for (let i = 0; i < row.count; i++) {
+          const switchEl = document.createElement("div");
+          const widthClass =
+            row.widths[i] || (Math.random() > 0.5 ? "w-12" : "w-16");
+
+          // 判斷是否為樹幹
+          const isTrunk = row.type === "trunk";
+
+          if (isTrunk) {
+            // 樹幹：不加動畫 class，加入 trunk class
+            switchEl.className = `switch ${widthClass} trunk`;
+          } else {
+            // 樹葉：加入隨機顏色與動畫
+            const randomColor =
+              colors[Math.floor(Math.random() * colors.length)];
+            switchEl.className = `switch ${widthClass} animating`;
+            switchEl.style.setProperty("--target-color", randomColor);
+
+            const randomDelay = Math.random() * -5;
+            switchEl.style.animationDelay = `${randomDelay}s`;
+          }
+
+          const knob = document.createElement("div");
+
+          if (isTrunk) {
+            // 樹幹按鈕：無動畫
+            knob.className = "knob";
+          } else {
+            // 樹葉按鈕：有動畫
+            knob.className = "knob knob-anim";
+            // 必須與父層 switch 延遲同步
+            knob.style.animationDelay = switchEl.style.animationDelay;
+          }
+
+          switchEl.appendChild(knob);
+          rowDiv.appendChild(switchEl);
+        }
+        container.appendChild(rowDiv);
+      });
+
+      // --- YouTube Player API 設定 ---
+      var tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      var player;
+
+      // 播放清單 - 已更新
+      const VIDEO_IDS = [
+        "jgPByUmJ_n0",
+        "uEoGR24CirQ",
+        "zsFNoriSxHU",
+        "7zuiHgFjIH0",
+      ];
+
+      let currentVideoIndex = 0;
+
+      window.onYouTubeIframeAPIReady = function () {
+        loadPlayer(VIDEO_IDS[currentVideoIndex]);
+      };
+
+      function loadPlayer(videoId) {
+        player = new YT.Player("youtube-player", {
+          height: "100%",
+          width: "100%",
+          videoId: videoId,
+          playerVars: {
+            autoplay: 1,
+            controls: 1,
+            loop: 1,
+            playlist: videoId,
+            playsinline: 1,
+            origin: window.location.origin,
+            modestbranding: 1,
+          },
+          events: {
+            onReady: onPlayerReady,
+            onError: onPlayerError,
+          },
+        });
+      }
+
+      function onPlayerReady(event) {
+        event.target.unMute();
+        event.target.playVideo();
+      }
+
+      function onPlayerError(event) {
+        console.log("Video Error, trying next one...");
+        currentVideoIndex++;
+        if (currentVideoIndex < VIDEO_IDS.length) {
+          player.destroy();
+          loadPlayer(VIDEO_IDS[currentVideoIndex]);
+        }
+      }
+
+      document.body.addEventListener("click", (e) => {
+        // 隨機化動畫 (只針對非樹幹的開關)
+        const switches = document.querySelectorAll(".switch:not(.trunk)");
+        switches.forEach((sw) => {
+          const newDelay = Math.random() * -5;
+          sw.style.animationDelay = `${newDelay}s`;
+          const knob = sw.querySelector(".knob");
+          if (knob) knob.style.animationDelay = `${newDelay}s`;
         });
 
-        // --- YouTube Player API 設定 ---
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        var player;
-
-        // 播放清單 - 已更新
-        const VIDEO_IDS = [
-            'jgPByUmJ_n0',
-            'uEoGR24CirQ',
-            'zsFNoriSxHU',
-            '7zuiHgFjIH0',
-        ];
-        
-        let currentVideoIndex = 0;
-
-        window.onYouTubeIframeAPIReady = function() {
-            loadPlayer(VIDEO_IDS[currentVideoIndex]);
-        };
-
-        function loadPlayer(videoId) {
-            player = new YT.Player('youtube-player', {
-                height: '100%', 
-                width: '100%',
-                videoId: videoId, 
-                playerVars: {
-                    'autoplay': 1,
-                    'controls': 1,
-                    'loop': 1,
-                    'playlist': videoId, 
-                    'playsinline': 1,
-                    'origin': window.location.origin,
-                    'modestbranding': 1
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onError': onPlayerError
-                }
-            });
+        // 確保播放
+        if (player && player.getPlayerState && player.getPlayerState() !== 1) {
+          player.unMute();
+          player.playVideo();
         }
-
-        function onPlayerReady(event) {
-            event.target.unMute();
-            event.target.playVideo();
-        }
-
-        function onPlayerError(event) {
-            console.log("Video Error, trying next one...");
-            currentVideoIndex++;
-            if (currentVideoIndex < VIDEO_IDS.length) {
-                player.destroy(); 
-                loadPlayer(VIDEO_IDS[currentVideoIndex]);
-            }
-        }
-
-        document.body.addEventListener('click', (e) => {
-            // 隨機化動畫 (只針對非樹幹的開關)
-            const switches = document.querySelectorAll('.switch:not(.trunk)');
-            switches.forEach(sw => {
-                const newDelay = Math.random() * -5;
-                sw.style.animationDelay = `${newDelay}s`;
-                const knob = sw.querySelector('.knob');
-                if(knob) knob.style.animationDelay = `${newDelay}s`;
-            });
-            
-            // 確保播放
-            if (player && player.getPlayerState && player.getPlayerState() !== 1) {
-                player.unMute();
-                player.playVideo();
-            }
-        });
-
+      });
     </script>
-</body>
+  </body>
 </html>
