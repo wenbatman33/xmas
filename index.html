@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merry Christmas!</title>
+    <title>Looping Switch Tree</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* * 核心配色 
@@ -32,6 +32,12 @@
             background-color: var(--bg-color);
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden; /* 防止捲軸 */
+            /* 確保內容垂直置中 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
         /* * 開關本體 (容器)
@@ -47,6 +53,8 @@
             margin: 4px;
             /* 初始寬度，會被 JS 覆蓋 */
             width: 50px; 
+            /* 避免手機上點擊出現藍色框框 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* * 開關裡的圓鈕 (Knob)
@@ -67,46 +75,18 @@
          * 讓開關不斷地從 Off -> On -> Off 循環
          */
         @keyframes toggleLoop {
-            0%, 10% {
-                /* 關閉狀態 */
-                background-color: var(--switch-off-bg);
-            }
-            10% {
-                /* 圓鈕還在左邊，顏色開始變 */
-                background-color: var(--switch-off-bg);
-            }
-            20% {
-                /* 開啟過程 */
-                background-color: var(--target-color);
-            }
-            45%, 55% {
-                /* 保持開啟狀態一段時間 */
-                background-color: var(--target-color);
-            }
-            65% {
-                /* 準備關閉 */
-                background-color: var(--target-color);
-            }
-            75%, 100% {
-                /* 回到關閉 */
-                background-color: var(--switch-off-bg);
-            }
+            0%, 10% { background-color: var(--switch-off-bg); }
+            10% { background-color: var(--switch-off-bg); }
+            20% { background-color: var(--target-color); }
+            45%, 55% { background-color: var(--target-color); }
+            65% { background-color: var(--target-color); }
+            75%, 100% { background-color: var(--switch-off-bg); }
         }
 
         @keyframes knobLoop {
-            0%, 10% {
-                transform: translateX(0);
-                background-color: var(--knob-off);
-            }
-            20%, 65% {
-                /* 移動到右側 */
-                transform: translateX(calc(100% + 4px)); 
-                background-color: var(--knob-on);
-            }
-            75%, 100% {
-                transform: translateX(0);
-                background-color: var(--knob-off);
-            }
+            0%, 10% { transform: translateX(0); background-color: var(--knob-off); }
+            20%, 65% { transform: translateX(calc(100% + 4px)); background-color: var(--knob-on); }
+            75%, 100% { transform: translateX(0); background-color: var(--knob-off); }
         }
 
         /* 應用動畫的類別 */
@@ -114,9 +94,7 @@
             animation: toggleLoop 4s infinite ease-in-out;
         }
         
-        /* * 由於每個開關寬度不同，knob 的位移距離需要個別處理
-         */
-         
+        /* Knob 位移距離動畫 */
         .switch.w-12 .knob-anim { animation: knobMoveSmall 4s infinite ease-in-out; }
         .switch.w-16 .knob-anim { animation: knobMoveMedium 4s infinite ease-in-out; }
         .switch.w-20 .knob-anim { animation: knobMoveLarge 4s infinite ease-in-out; }
@@ -144,14 +122,13 @@
             letter-spacing: 4px;
             font-weight: 700;
             opacity: 0.9;
+            transition: all 0.3s;
         }
         .logo-accent {
             color: var(--active-gold); /* 金色 */
         }
 
-        /* YouTube 小視窗樣式
-         * 固定在右下角，設有邊框和陰影，使其看起來像個裝飾
-         */
+        /* YouTube 小視窗樣式 */
         .video-container {
             position: fixed;
             bottom: 20px;
@@ -164,16 +141,12 @@
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             background-color: #000;
-            opacity: 1; /* 確保完全可見 */
+            opacity: 1; 
             transition: transform 0.3s ease;
         }
-        
-        /* 滑鼠移上去稍微放大 */
         .video-container:hover {
             transform: scale(1.05);
         }
-
-        /* 添加一個小標籤說明 */
         .video-label {
             position: absolute;
             top: -25px;
@@ -183,13 +156,50 @@
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
+
+        /* -------------------------------------
+           手機版優化 (Mobile Optimization)
+           ------------------------------------- */
+        @media (max-width: 768px) {
+            /* 1. 縮小整棵樹 */
+            #tree-container {
+                transform: scale(0.65); /* 縮小至 65% */
+                margin-bottom: -2rem;   /* 調整因為縮小產生的空白 */
+            }
+
+            /* 2. 縮小影片視窗，避免擋住太多 */
+            .video-container {
+                width: 160px;
+                height: 90px;
+                bottom: 15px;
+                right: 15px;
+                border-width: 2px;
+            }
+            .video-label {
+                font-size: 10px;
+                top: -18px;
+            }
+
+            /* 3. 調整文字大小 */
+            .logo-text {
+                font-size: 1.1rem;
+                margin-top: 0px;
+            }
+        }
+        
+        /* 針對更小的螢幕 (例如 iPhone SE) */
+        @media (max-width: 380px) {
+             #tree-container {
+                transform: scale(0.55); /* 縮得更小 */
+            }
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen">
+<body>
 
     <!-- YouTube 播放器容器 (右下角) -->
     <div class="video-container">
-        <!-- 標籤說明 (在 container 內部或外部定位都可以，這裡用 CSS 絕對定位處理) -->
+        <!-- 標籤說明 -->
         <div class="video-label">BGM: Christmas Vibes 🎵</div>
         <div id="youtube-player"></div>
     </div>
@@ -248,7 +258,7 @@
                 switchEl.style.animationDelay = `${randomDelay}s`;
 
                 const knob = document.createElement('div');
-                knob.className = 'knob knob-anim'; // 直接加入 knob-anim
+                knob.className = 'knob knob-anim'; 
                 knob.style.animationDelay = `${randomDelay}s`;
 
                 switchEl.appendChild(knob);
@@ -265,8 +275,8 @@
 
         var player;
 
-        // 播放清單 ID 列表 (當遇到版權問題時自動切換)
-        const VIDEO_IDS = [
+        // 播放清單
+        const VIDEO_IDS = [ 
             'jgPByUmJ_n0',
             'uEoGR24CirQ',
             'zsFNoriSxHU',
@@ -288,38 +298,34 @@
                     'autoplay': 1,
                     'controls': 1,
                     'loop': 1,
-                    'playlist': videoId, // 循環播放
+                    'playlist': videoId, 
                     'playsinline': 1,
                     'origin': window.location.origin,
                     'modestbranding': 1
                 },
                 events: {
                     'onReady': onPlayerReady,
-                    'onError': onPlayerError // 處理播放錯誤
+                    'onError': onPlayerError
                 }
             });
         }
 
         function onPlayerReady(event) {
-            // 嘗試播放並解除靜音
             event.target.unMute();
             event.target.playVideo();
         }
 
-        // 當發生錯誤 (例如影片禁止嵌入) 時自動換下一首
         function onPlayerError(event) {
             console.log("Video Error, trying next one...");
             currentVideoIndex++;
             if (currentVideoIndex < VIDEO_IDS.length) {
-                // 銷毀舊的 player 並建立新的
                 player.destroy(); 
                 loadPlayer(VIDEO_IDS[currentVideoIndex]);
             }
         }
 
-        // 點擊背景重新隨機化延遲 + 確保音樂播放
         document.body.addEventListener('click', (e) => {
-            // 隨機化
+            // 隨機化動畫
             const switches = document.querySelectorAll('.switch');
             switches.forEach(sw => {
                 const newDelay = Math.random() * -5;
@@ -328,7 +334,7 @@
                 if(knob) knob.style.animationDelay = `${newDelay}s`;
             });
             
-            // 嘗試播放 (如果自動播放失敗，點擊網頁任何地方也會觸發)
+            // 確保播放
             if (player && player.getPlayerState && player.getPlayerState() !== 1) {
                 player.unMute();
                 player.playVideo();
