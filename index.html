@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merry Christmas!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* * 核心配色 
+         * 修改為「綠樹紅底」配色
+         */
+        :root {
+            --bg-color: #990000;       /* 聖誕紅背景 */
+            
+            /* 樹的本體顏色 (關閉狀態) - 改為深綠色系 */
+            --switch-off-bg: #064e3b;  /* 極深綠色 (樹葉陰影) */
+            --knob-off: #166534;       /* 深綠色 (樹葉) */
+            --knob-on: #ffffff;        /* 開啟時圓鈕保持白色 */
+            
+            /* 亮起時的顏色變數 - 增加多種綠色 */
+            --active-green-light: #4ade80;   /* 嫩綠色/亮綠 */
+            --active-green-medium: #22c55e;  /* 正綠色 */
+            --active-green-dark: #15803d;    /* 深綠色 */
+            
+            /* 點綴色 (裝飾品) */
+            --active-red: #ef4444;     
+            --active-gold: #fbbf24;    
+            --active-white: #f8fafc;   
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden; /* 防止捲軸 */
+        }
+
+        /* * 開關本體 (容器)
+         */
+        .switch {
+            position: relative;
+            height: 28px;
+            border-radius: 999px; /* 膠囊形狀 */
+            background-color: var(--switch-off-bg);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+            margin: 4px;
+            /* 初始寬度，會被 JS 覆蓋 */
+            width: 50px; 
+        }
+
+        /* * 開關裡的圓鈕 (Knob)
+         */
+        .knob {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--knob-off);
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* * 動畫定義
+         * 讓開關不斷地從 Off -> On -> Off 循環
+         */
+        @keyframes toggleLoop {
+            0%, 10% {
+                /* 關閉狀態 */
+                background-color: var(--switch-off-bg);
+            }
+            10% {
+                /* 圓鈕還在左邊，顏色開始變 */
+                background-color: var(--switch-off-bg);
+            }
+            20% {
+                /* 開啟過程 */
+                background-color: var(--target-color);
+            }
+            45%, 55% {
+                /* 保持開啟狀態一段時間 */
+                background-color: var(--target-color);
+            }
+            65% {
+                /* 準備關閉 */
+                background-color: var(--target-color);
+            }
+            75%, 100% {
+                /* 回到關閉 */
+                background-color: var(--switch-off-bg);
+            }
+        }
+
+        @keyframes knobLoop {
+            0%, 10% {
+                transform: translateX(0);
+                background-color: var(--knob-off);
+            }
+            20%, 65% {
+                /* 移動到右側 */
+                transform: translateX(calc(100% + 4px)); 
+                background-color: var(--knob-on);
+            }
+            75%, 100% {
+                transform: translateX(0);
+                background-color: var(--knob-off);
+            }
+        }
+
+        /* 應用動畫的類別 */
+        .animating {
+            animation: toggleLoop 4s infinite ease-in-out;
+        }
+        
+        /* * 由於每個開關寬度不同，knob 的位移距離需要個別處理
+         */
+         
+        .switch.w-12 .knob-anim { animation: knobMoveSmall 4s infinite ease-in-out; }
+        .switch.w-16 .knob-anim { animation: knobMoveMedium 4s infinite ease-in-out; }
+        .switch.w-20 .knob-anim { animation: knobMoveLarge 4s infinite ease-in-out; }
+
+        @keyframes knobMoveSmall {
+            0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
+            25%, 60% { transform: translateX(20px); background-color: var(--knob-on); } 
+            70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
+        }
+        @keyframes knobMoveMedium {
+            0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
+            25%, 60% { transform: translateX(36px); background-color: var(--knob-on); }
+            70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
+        }
+        @keyframes knobMoveLarge {
+            0%, 15% { transform: translateX(0); background-color: var(--knob-off); }
+            25%, 60% { transform: translateX(52px); background-color: var(--knob-on); }
+            70%, 100% { transform: translateX(0); background-color: var(--knob-off); }
+        }
+
+        /* * Logo 樣式 
+         */
+        .logo-text {
+            color: #fff;
+            letter-spacing: 4px;
+            font-weight: 700;
+            opacity: 0.9;
+        }
+        .logo-accent {
+            color: var(--active-gold); /* 金色 */
+        }
+
+        /* YouTube 小視窗樣式
+         * 固定在右下角，設有邊框和陰影，使其看起來像個裝飾
+         */
+        .video-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 240px;
+            height: 135px; /* 16:9 比例 */
+            z-index: 100;
+            border: 4px solid var(--active-gold);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            background-color: #000;
+            opacity: 1; /* 確保完全可見 */
+            transition: transform 0.3s ease;
+        }
+        
+        /* 滑鼠移上去稍微放大 */
+        .video-container:hover {
+            transform: scale(1.05);
+        }
+
+        /* 添加一個小標籤說明 */
+        .video-label {
+            position: absolute;
+            top: -25px;
+            right: 0;
+            color: var(--active-gold);
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+    <!-- YouTube 播放器容器 (右下角) -->
+    <div class="video-container">
+        <!-- 標籤說明 (在 container 內部或外部定位都可以，這裡用 CSS 絕對定位處理) -->
+        <div class="video-label">BGM: Christmas Vibes 🎵</div>
+        <div id="youtube-player"></div>
+    </div>
+
+    <!-- 主要容器 -->
+    <div id="tree-container" class="flex flex-col items-center gap-2 mb-12">
+        <!-- Javascript 會在這裡生成開關 -->
+    </div>
+
+    <!-- 底部文字 -->
+    <div class="logo-text text-xl">
+        <span class="logo-accent">Merry</span> Christmas!
+    </div>
+
+    <script>
+        const container = document.getElementById('tree-container');
+
+        // 定義每一層的開關數量與配置
+        const rowsConfig = [
+            { count: 1, widths: ['w-12'] },
+            { count: 2, widths: ['w-12', 'w-12'] },
+            { count: 3, widths: ['w-16', 'w-12', 'w-16'] },
+            { count: 4, widths: ['w-12', 'w-16', 'w-16', 'w-12'] },
+            { count: 5, widths: ['w-12', 'w-12', 'w-16', 'w-12', 'w-12'] },
+            { count: 6, widths: ['w-16', 'w-12', 'w-12', 'w-12', 'w-12', 'w-16'] },
+            { count: 7, widths: ['w-12', 'w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12'] },
+            { count: 8, widths: ['w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12', 'w-16', 'w-12'] },
+        ];
+
+        // 聖誕配色
+        const colors = [
+            'var(--active-green-light)',
+            'var(--active-green-medium)',
+            'var(--active-green-dark)',
+            'var(--active-green-medium)', 
+            'var(--active-green-light)',
+            'var(--active-gold)',
+            'var(--active-white)', 
+            'var(--active-red)' 
+        ];
+
+        rowsConfig.forEach((row, rowIndex) => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'flex justify-center items-center';
+            
+            for (let i = 0; i < row.count; i++) {
+                const switchEl = document.createElement('div');
+                const widthClass = row.widths[i] || (Math.random() > 0.5 ? 'w-12' : 'w-16');
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+                // 直接加入 animating class
+                switchEl.className = `switch ${widthClass} animating`; 
+                switchEl.style.setProperty('--target-color', randomColor);
+
+                const randomDelay = Math.random() * -5; 
+                switchEl.style.animationDelay = `${randomDelay}s`;
+
+                const knob = document.createElement('div');
+                knob.className = 'knob knob-anim'; // 直接加入 knob-anim
+                knob.style.animationDelay = `${randomDelay}s`;
+
+                switchEl.appendChild(knob);
+                rowDiv.appendChild(switchEl);
+            }
+            container.appendChild(rowDiv);
+        });
+
+        // --- YouTube Player API 設定 ---
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+
+        // 播放清單 ID 列表 (當遇到版權問題時自動切換)
+        const VIDEO_IDS = [
+            'jgPByUmJ_n0',
+            'uEoGR24CirQ',
+            'zsFNoriSxHU',
+            '7zuiHgFjIH0',
+        ];
+        
+        let currentVideoIndex = 0;
+
+        window.onYouTubeIframeAPIReady = function() {
+            loadPlayer(VIDEO_IDS[currentVideoIndex]);
+        };
+
+        function loadPlayer(videoId) {
+            player = new YT.Player('youtube-player', {
+                height: '100%', 
+                width: '100%',
+                videoId: videoId, 
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 1,
+                    'loop': 1,
+                    'playlist': videoId, // 循環播放
+                    'playsinline': 1,
+                    'origin': window.location.origin,
+                    'modestbranding': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onError': onPlayerError // 處理播放錯誤
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // 嘗試播放並解除靜音
+            event.target.unMute();
+            event.target.playVideo();
+        }
+
+        // 當發生錯誤 (例如影片禁止嵌入) 時自動換下一首
+        function onPlayerError(event) {
+            console.log("Video Error, trying next one...");
+            currentVideoIndex++;
+            if (currentVideoIndex < VIDEO_IDS.length) {
+                // 銷毀舊的 player 並建立新的
+                player.destroy(); 
+                loadPlayer(VIDEO_IDS[currentVideoIndex]);
+            }
+        }
+
+        // 點擊背景重新隨機化延遲 + 確保音樂播放
+        document.body.addEventListener('click', (e) => {
+            // 隨機化
+            const switches = document.querySelectorAll('.switch');
+            switches.forEach(sw => {
+                const newDelay = Math.random() * -5;
+                sw.style.animationDelay = `${newDelay}s`;
+                const knob = sw.querySelector('.knob');
+                if(knob) knob.style.animationDelay = `${newDelay}s`;
+            });
+            
+            // 嘗試播放 (如果自動播放失敗，點擊網頁任何地方也會觸發)
+            if (player && player.getPlayerState && player.getPlayerState() !== 1) {
+                player.unMute();
+                player.playVideo();
+            }
+        });
+
+    </script>
+</body>
+</html>
