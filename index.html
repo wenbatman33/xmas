@@ -71,6 +71,14 @@
         min-height: 100vh;
       }
 
+      /* 隱藏原生 checkbox 但保留功能 */
+      .switch-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
       /* * 開關本體 (容器)
          */
       .switch {
@@ -115,139 +123,37 @@
         animation: none !important;
       }
 
-      /* * 動畫定義
-         * 讓開關不斷地從 Off -> On -> Off 循環
+      /* * 動畫定義 - 移除 Keyframes，改用 Transition + Checked 狀態
          */
-      @keyframes toggleLoop {
-        0%,
-        10% {
-          background-color: var(--switch-off-bg);
-        }
-        10% {
-          background-color: var(--switch-off-bg);
-        }
-        20% {
-          background-color: var(--target-color);
-        }
-        45%,
-        55% {
-          background-color: var(--target-color);
-        }
-        65% {
-          background-color: var(--target-color);
-        }
-        75%,
-        100% {
-          background-color: var(--switch-off-bg);
-        }
+
+      /* 應用 Checkbox 狀態的樣式 */
+
+      /* 1. Switch 背景色變化 (當內部 checkbox 被勾選時) */
+      /* 使用 :has 選取器 (現代瀏覽器支援) */
+      .switch:has(.switch-input:checked) {
+        background-color: var(--target-color);
       }
 
-      @keyframes knobLoop {
-        0%,
-        10% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-        20%,
-        65% {
-          transform: translateX(calc(100% + 4px));
-          background-color: var(--knob-on);
-        }
-        75%,
-        100% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
+      /* 2. Knob 移動與變色 (當前置 checkbox 被勾選時) */
+      .switch-input:checked + .knob {
+        background-color: var(--knob-on);
       }
 
-      /* 應用動畫的類別 */
-      .animating {
-        animation: toggleLoop 4s infinite ease-in-out;
+      /* 依據不同寬度設定位移量 */
+      .switch.w-12 .switch-input:checked + .knob {
+        transform: translateX(20px);
+      }
+      .switch.w-16 .switch-input:checked + .knob {
+        transform: translateX(36px);
+      }
+      .switch.w-20 .switch-input:checked + .knob {
+        transform: translateX(52px);
+      }
+      .switch.w-24 .switch-input:checked + .knob {
+        transform: translateX(68px);
       }
 
-      /* Knob 位移距離動畫 */
-      .switch.w-12 .knob-anim {
-        animation: knobMoveSmall 4s infinite ease-in-out;
-      }
-      .switch.w-16 .knob-anim {
-        animation: knobMoveMedium 4s infinite ease-in-out;
-      }
-      .switch.w-20 .knob-anim {
-        animation: knobMoveLarge 4s infinite ease-in-out;
-      }
-      /* 為合併後的樹幹增加一個對應的寬度動畫 (雖然樹幹不一定動，但若有需要可擴充) */
-      .switch.w-24 .knob-anim {
-        animation: knobMoveXLarge 4s infinite ease-in-out;
-      }
-
-      @keyframes knobMoveSmall {
-        0%,
-        15% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-        25%,
-        60% {
-          transform: translateX(20px);
-          background-color: var(--knob-on);
-        }
-        70%,
-        100% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-      }
-      @keyframes knobMoveMedium {
-        0%,
-        15% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-        25%,
-        60% {
-          transform: translateX(36px);
-          background-color: var(--knob-on);
-        }
-        70%,
-        100% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-      }
-      @keyframes knobMoveLarge {
-        0%,
-        15% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-        25%,
-        60% {
-          transform: translateX(52px);
-          background-color: var(--knob-on);
-        }
-        70%,
-        100% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-      }
-      @keyframes knobMoveXLarge {
-        0%,
-        15% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-        25%,
-        60% {
-          transform: translateX(68px);
-          background-color: var(--knob-on);
-        }
-        70%,
-        100% {
-          transform: translateX(0);
-          background-color: var(--knob-off);
-        }
-      }
+      /* 移除原本的 Keyframes */
 
       /* * Logo 樣式 
          */
@@ -449,7 +355,8 @@
         rowDiv.className = "flex justify-center items-center";
 
         for (let i = 0; i < row.count; i++) {
-          const switchEl = document.createElement("div");
+          // 改用 Label 以支援 checkbox
+          const switchEl = document.createElement("label");
           const widthClass =
             row.widths[i] || (Math.random() > 0.5 ? "w-12" : "w-16");
 
@@ -460,26 +367,38 @@
             // 樹幹：不加動畫 class，加入 trunk class
             switchEl.className = `switch ${widthClass} trunk`;
           } else {
-            // 樹葉：加入隨機顏色與動畫
+            // 樹葉：加入隨機顏色
             const randomColor =
               colors[Math.floor(Math.random() * colors.length)];
-            switchEl.className = `switch ${widthClass} animating`;
+            // 移除 CSS 動畫類別
+            switchEl.className = `switch ${widthClass}`;
             switchEl.style.setProperty("--target-color", randomColor);
 
-            const randomDelay = Math.random() * -5;
-            switchEl.style.animationDelay = `${randomDelay}s`;
+            // 隨機初始狀態：有機會一開始就是亮的
+            if (Math.random() > 0.5) {
+              // 會在稍後被 Loop 覆蓋，但給個初值
+            }
           }
 
-          const knob = document.createElement("div");
+          // 新增隱藏的 Checkbox
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.className = "switch-input";
+          switchEl.appendChild(checkbox);
+
+          // Knob 改為 span
+          const knob = document.createElement("span");
 
           if (isTrunk) {
             // 樹幹按鈕：無動畫
             knob.className = "knob";
+            // 樹幹永遠不勾選
           } else {
-            // 樹葉按鈕：有動畫
-            knob.className = "knob knob-anim";
-            // 必須與父層 switch 延遲同步
-            knob.style.animationDelay = switchEl.style.animationDelay;
+            // 樹葉按鈕
+            knob.className = "knob"; // 移除 knob-anim
+
+            // 啟動隨機閃爍邏輯 (Real Checkbox Logic)
+            startBlinking(checkbox);
           }
 
           switchEl.appendChild(knob);
@@ -487,6 +406,38 @@
         }
         container.appendChild(rowDiv);
       });
+
+      // 讓每個燈泡有獨立的閃爍頻率與時機
+      function startBlinking(checkbox) {
+        // 隨機決定多久切換一次 (例如 2秒 ~ 6秒 之間)
+        // 為了讓視覺比較像原本的 Animation Loop，我們可以設定一個週期
+        // 原本動畫是 4s，我們用隨機區間來模擬不規則閃爍
+
+        const toggle = () => {
+          checkbox.checked = !checkbox.checked;
+
+          // 下一次切換的時間 (隨機) - 讓它有點隨機感，像呼吸燈或亂數閃爍
+          // 亮的短一點，暗的長一點？或者平均？
+          // 模擬原本動畫：亮的時間約佔 40% (20%~65%)
+
+          let nextDelay;
+          if (checkbox.checked) {
+            // 如果現在是亮的，亮多久後熄滅？ (原本動畫約維持 1.5s ~ 2s)
+            nextDelay = 1000 + Math.random() * 1500;
+          } else {
+            // 如果現在是暗的，暗多久後亮起？
+            nextDelay = 1000 + Math.random() * 2000;
+          }
+
+          setTimeout(toggle, nextDelay);
+        };
+
+        // 初始隨機延遲啟動
+        const initialDelay = Math.random() * 3000;
+        setTimeout(() => {
+          toggle();
+        }, initialDelay);
+      }
 
       // --- YouTube Player API 設定 ---
       var tag = document.createElement("script");
@@ -548,14 +499,14 @@
       }
 
       document.body.addEventListener("click", (e) => {
-        // 隨機化動畫 (只針對非樹幹的開關)
-        const switches = document.querySelectorAll(".switch:not(.trunk)");
-        switches.forEach((sw) => {
-          const newDelay = Math.random() * -5;
-          sw.style.animationDelay = `${newDelay}s`;
-          const knob = sw.querySelector(".knob");
-          if (knob) knob.style.animationDelay = `${newDelay}s`;
+        // 點擊頁面時，可以隨機重置一次所有燈泡狀態 (Optional Interaction)
+        /*
+        const inputs = document.querySelectorAll(".switch-input");
+        inputs.forEach(input => {
+             // 隨機切換
+             if(Math.random() > 0.5) input.checked = !input.checked;
         });
+        */
 
         // 確保播放
         if (player && player.getPlayerState && player.getPlayerState() !== 1) {
