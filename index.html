@@ -291,6 +291,35 @@
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
       }
 
+      /* 星星樣式 */
+      .star-container {
+        margin-bottom: 4px; /* 與樹頂保持一點距離 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: starPulse 3s infinite ease-in-out;
+        z-index: 10;
+      }
+
+      .star-svg {
+        width: 60px;
+        height: 60px;
+        fill: var(--active-gold);
+        filter: drop-shadow(0 0 8px var(--active-gold));
+      }
+
+      @keyframes starPulse {
+        0%,
+        100% {
+          transform: scale(1);
+          filter: drop-shadow(0 0 8px var(--active-gold));
+        }
+        50% {
+          transform: scale(1.15);
+          filter: drop-shadow(0 0 20px #fbbf24);
+        }
+      }
+
       /* -------------------------------------
            手機版優化 (Mobile Optimization)
            ------------------------------------- */
@@ -299,6 +328,12 @@
         #tree-container {
           transform: scale(0.65); /* 縮小至 65% */
           margin-bottom: -2rem; /* 調整因為縮小產生的空白 */
+        }
+
+        /* 手機版星星稍微調整 */
+        .star-svg {
+          width: 50px;
+          height: 50px;
         }
 
         /* 2. 縮小影片視窗，避免擋住太多 */
@@ -340,12 +375,25 @@
 
     <!-- 主要容器 -->
     <div id="tree-container" class="flex flex-col items-center gap-2 mb-12">
+      <!-- 星星 (Star) -->
+      <div class="star-container">
+        <svg
+          class="star-svg"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+          />
+        </svg>
+      </div>
       <!-- Javascript 會在這裡生成開關 -->
     </div>
 
     <!-- 底部文字 -->
-    <div class="logo-text text-xl">
-      <span class="logo-accent">Merry</span> Christmas!
+    <div class="logo-text text-xl text-center">
+      <p><span class="logo-accent">Merry</span> Christmas,</p>
+      <p>my <span class="bold">dear friend!</span></p>
     </div>
 
     <script>
