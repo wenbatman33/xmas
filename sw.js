@@ -1,9 +1,3 @@
-/*
- * Service Worker (No Cache Version)
- * 為了確保每次都能看到最新更新，此 Service Worker 不會進行任何快取。
- * 它僅保留基本的 PWA 安裝能力。
- */
-
 const CACHE_NAME = "xmas-tree-no-cache-v1";
 
 // Install event: 強制跳過等待，讓新的 SW 立刻生效

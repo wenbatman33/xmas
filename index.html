@@ -2,7 +2,10 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Merry Christmas!</title>
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json" />
@@ -22,9 +25,14 @@
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
+          // Add timestamp to force update the service worker file itself
           navigator.serviceWorker
-            .register("./sw.js")
-            .then((reg) => console.log("Service Worker registered", reg))
+            .register("./sw.js?v=" + new Date().getTime())
+            .then((reg) => {
+              console.log("Service Worker registered properly", reg);
+              // Force update check immediately
+              reg.update();
+            })
             .catch((err) =>
               console.log("Service Worker registration failed", err)
             );
